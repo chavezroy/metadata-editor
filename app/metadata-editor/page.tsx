@@ -379,7 +379,7 @@ export default function MetadataEditor(): React.ReactElement {
                       <p className="text-sm font-medium mb-2 text-gray-900">
                         Preview
                       </p>
-                      <div className="w-full max-w-[380px] rounded-lg overflow-hidden border border-gray-300 bg-gray-100 flex items-center justify-center aspect-[1200/630]">
+                      <div className="w-full max-w-[380px] bg-gray-100 flex items-center justify-center aspect-[1200/630]">
                         <img
                           src={formData.ogImage}
                           alt="OG Image Preview"

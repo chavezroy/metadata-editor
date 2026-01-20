@@ -374,11 +374,11 @@ export default function MetadataEditor(): React.ReactElement {
                     </label>
                   </div>
 
-                  {formData.ogImage && (
-                    <div className="mt-4 space-y-4">
-                      <p className="text-sm font-medium mb-2 text-gray-900">
-                        Preview
-                      </p>
+                  <div className="mt-4 space-y-4">
+                    <p className="text-sm font-medium mb-2 text-gray-900">
+                      Preview
+                    </p>
+                    {formData.ogImage ? (
                       <div className="w-full max-w-[380px] bg-gray-100 flex items-center justify-center aspect-[1200/630]">
                         <img
                           src={formData.ogImage}
@@ -393,6 +393,11 @@ export default function MetadataEditor(): React.ReactElement {
                           }}
                         />
                       </div>
+                    ) : (
+                      <div className="w-full max-w-[380px] bg-gray-200 flex items-center justify-center aspect-[1200/630] rounded">
+                        <span className="text-gray-400 text-sm">OG Image Placeholder</span>
+                      </div>
+                    )}
 
                       {/* File Information */}
                       <div className="w-full max-w-[380px] p-4 rounded-lg border border-gray-300 bg-white">
@@ -456,19 +461,25 @@ export default function MetadataEditor(): React.ReactElement {
                     </label>
                   </div>
 
-                  {formData.favicon && (
-                    <div className="mt-4">
-                      <p className="text-sm font-medium mb-2 text-gray-900">
-                        Preview
-                      </p>
+                  <div className="mt-4">
+                    <p className="text-sm font-medium mb-2 text-gray-900">
+                      Preview
+                    </p>
+                    {formData.favicon ? (
                       <div className={styles.faviconPreview}>
                         <img
                           src={formData.favicon}
                           alt="Favicon Preview"
                         />
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className={styles.faviconPreview}>
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded">
+                          <span className="text-gray-400 text-xs">Icon</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Save Button */}
@@ -513,13 +524,17 @@ export default function MetadataEditor(): React.ReactElement {
                   </h3>
                   <div className="max-w-[550px] rounded-lg shadow-sm">
                     <div className="overflow-hidden rounded-lg">
-                      {formData.ogImage && (
+                      {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[2/1]">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
                           />
+                        </div>
+                      ) : (
+                        <div className="w-full bg-gray-200 aspect-[2/1] flex items-center justify-center">
+                          <span className="text-gray-400 text-sm">OG Image Placeholder</span>
                         </div>
                       )}
                       <div className="p-3 bg-white">
@@ -538,13 +553,17 @@ export default function MetadataEditor(): React.ReactElement {
                   </h3>
                   <div className="max-w-[550px] rounded-lg shadow-sm">
                     <div className="overflow-hidden rounded-lg">
-                      {formData.ogImage && (
+                      {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
                           />
+                        </div>
+                      ) : (
+                        <div className="w-full bg-gray-200 aspect-[1.91/1] flex items-center justify-center">
+                          <span className="text-gray-400 text-sm">OG Image Placeholder</span>
                         </div>
                       )}
                       <div className="p-3 bg-gray-50">
@@ -563,13 +582,17 @@ export default function MetadataEditor(): React.ReactElement {
                   </h3>
                   <div className="max-w-[550px] rounded-lg shadow-sm">
                     <div className="overflow-hidden rounded-lg">
-                      {formData.ogImage && (
+                      {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
                           />
+                        </div>
+                      ) : (
+                        <div className="w-full bg-gray-200 aspect-[1.91/1] flex items-center justify-center">
+                          <span className="text-gray-400 text-sm">OG Image Placeholder</span>
                         </div>
                       )}
                       <div className="p-3 bg-white">
@@ -587,13 +610,17 @@ export default function MetadataEditor(): React.ReactElement {
                   </h3>
                   <div className="max-w-[400px] rounded-lg shadow-sm">
                     <div className="overflow-hidden rounded-lg">
-                      {formData.ogImage && (
+                      {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
                           />
+                        </div>
+                      ) : (
+                        <div className="w-full bg-gray-200 aspect-[1.91/1] flex items-center justify-center">
+                          <span className="text-gray-400 text-sm">OG Image Placeholder</span>
                         </div>
                       )}
                       <div className="p-3 bg-white">
@@ -617,13 +644,17 @@ export default function MetadataEditor(): React.ReactElement {
                       </p>
                       <p className="text-sm font-semibold text-blue-600 hover:underline mb-1">{formData.title}</p>
                       <p className="text-xs text-gray-600 mb-3">{formData.description}</p>
-                      {formData.ogImage && (
+                      {formData.ogImage ? (
                         <div className="max-w-[400px] rounded-lg">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full rounded-lg"
                           />
+                        </div>
+                      ) : (
+                        <div className="max-w-[400px] bg-gray-200 aspect-[1.91/1] flex items-center justify-center rounded-lg">
+                          <span className="text-gray-400 text-sm">OG Image Placeholder</span>
                         </div>
                       )}
                     </div>

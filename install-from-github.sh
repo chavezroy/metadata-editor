@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Metadata Editor - GitHub Install Script
-# Usage: curl -fsSL https://raw.githubusercontent.com/chavezroy/roychavez-portfolio/main/metadata-editor/install-from-github.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/chavezroy/metadata-editor/main/install-from-github.sh | bash
 
 set -e
 
-REPO_URL="https://raw.githubusercontent.com/chavezroy/roychavez-portfolio/main/metadata-editor"
+REPO_URL="https://raw.githubusercontent.com/chavezroy/metadata-editor/main"
 TEMP_DIR=$(mktemp -d)
 
 echo "🚀 Installing Metadata Editor from GitHub..."
@@ -126,4 +126,4 @@ echo "1. Start your dev server: npm run dev"
 echo "2. Navigate to /metadata-editor in your app"
 echo "3. Configure your metadata and upload images"
 echo ""
-echo "📖 Documentation: https://github.com/chavezroy/roychavez-portfolio/tree/main/metadata-editor"
+echo "📖 Documentation: https://github.com/chavezroy/metadata-editor"

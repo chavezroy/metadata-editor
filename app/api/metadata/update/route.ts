@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const existingContent = fs.readFileSync(layoutPath, 'utf-8');
     
     // Update the layout.tsx content while preserving structure
-    const newLayoutContent = updateLayoutMetadata(existingContent, { ...data, siteUrl });
+    const newLayoutContent = updateLayoutMetadata(existingContent, { ...data, siteUrl }, layoutPath);
 
     // Write the updated content back to layout.tsx
     fs.writeFileSync(layoutPath, newLayoutContent, 'utf-8');
@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { siteUrl: string }): string {
+function updateLayoutMetadata(
+  existingContent: string,
+  data: MetadataUpdate & { siteUrl: string },
+  layoutPath: string
+): string {
   let updated = existingContent;
 
   const normalizePublicPath = (value: string): string => {
@@ -98,11 +102,32 @@ function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { 
   const escapeForTemplateLiteral = (value: string): string =>
     value.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
 
-  // Fix CSS import path if it's wrong
-  updated = updated.replace(
-    /import\s+['"]\.\/globals\.css['"]/,
-    'import "../styles/globals.css"'
-  );
+  // Fix CSS import path based on actual file location
+  try {
+    const projectRoot = process.cwd();
+    const layoutDir = path.dirname(layoutPath);
+
+    const localGlobalsPath = path.join(layoutDir, 'globals.css');
+    const stylesGlobalsPath = path.join(projectRoot, 'styles', 'globals.css');
+    const srcStylesGlobalsPath = path.join(projectRoot, 'src', 'styles', 'globals.css');
+
+    const hasLocalGlobals = fs.existsSync(localGlobalsPath);
+    const hasStylesGlobals = fs.existsSync(stylesGlobalsPath) || fs.existsSync(srcStylesGlobalsPath);
+
+    if (hasLocalGlobals && !hasStylesGlobals) {
+      // Project keeps globals.css next to layout.tsx (e.g. src/app/globals.css or app/globals.css)
+      updated = updated
+        .replace(/import\s+['"]\.\.\/styles\/globals\.css['"]/, 'import "./globals.css"')
+        .replace(/import\s+['"]\.\/globals\.css['"]/, 'import "./globals.css"');
+    } else if (hasStylesGlobals) {
+      // Project keeps globals.css under styles/ or src/styles/
+      updated = updated
+        .replace(/import\s+['"]\.\/globals\.css['"]/, 'import "../styles/globals.css"')
+        .replace(/import\s+['"]\.\.\/styles\/globals\.css['"]/, 'import "../styles/globals.css"');
+    }
+  } catch (cssError) {
+    console.error('Failed to normalize globals.css import path:', cssError);
+  }
 
   // Update or create siteUrl constant with AWS Amplify and Vercel support
   const siteUrlRegex = /const\s+siteUrl\s*=[\s\S]*?;/;

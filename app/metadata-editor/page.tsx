@@ -55,7 +55,7 @@ export default function MetadataEditor(): React.ReactElement {
     title: 'Start Page',
     description: 'Personal Start Page with Local Persistence',
     siteUrl: 'https://yourdomain.com',
-    ogImage: '/og-image.jpg',
+    ogImage: '/og-image.png',
     ogImageWidth: 1200,
     ogImageHeight: 630,
     favicon: '/icon.png',
@@ -465,7 +465,6 @@ export default function MetadataEditor(): React.ReactElement {
                         <img
                           src={formData.favicon}
                           alt="Favicon Preview"
-                          className="w-12 h-12 object-contain"
                         />
                       </div>
                     </div>
@@ -757,7 +756,6 @@ export default function MetadataEditor(): React.ReactElement {
                             <img
                               src={externalMetadata.favicon}
                               alt="Favicon"
-                              className="w-12 h-12 object-contain"
                             />
                           </div>
                           <p className="text-xs mt-2 text-gray-600">

@@ -53,9 +53,20 @@ export async function POST(request: NextRequest) {
         fs.unlinkSync(oldFaviconPath);
       }
 
-      // Save as icon.png (Next.js 13+ convention)
-      filePath = path.join(targetAppDir, 'icon.png');
-      url = '/icon.png'; // Next.js serves app/icon.png at /icon.png
+      // Remove old icon files if they exist
+      const oldIconPng = path.join(targetAppDir, 'icon.png');
+      const oldIconSvg = path.join(targetAppDir, 'icon.svg');
+      if (fs.existsSync(oldIconPng)) {
+        fs.unlinkSync(oldIconPng);
+      }
+      if (fs.existsSync(oldIconSvg)) {
+        fs.unlinkSync(oldIconSvg);
+      }
+
+      // Save as icon with original extension (Next.js 13+ supports icon.png, icon.svg, etc.)
+      const iconExt = ext.toLowerCase() === '.svg' ? '.svg' : '.png';
+      filePath = path.join(targetAppDir, `icon${iconExt}`);
+      url = `/icon${iconExt}`; // Next.js serves app/icon.* at /icon.*
     }
 
     // Save the file

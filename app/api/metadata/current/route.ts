@@ -37,7 +37,7 @@ export async function GET() {
 
     // Extract OG image URL (from the images array)
     const ogImageMatch = layoutContent.match(/url:\s*`\$\{siteUrl\}([^`]+)`/);
-    const ogImageRaw = ogImageMatch ? ogImageMatch[1] : '/og-image.png';
+    const ogImageRaw = ogImageMatch ? ogImageMatch[1] : '/og-img.png';
     // Normalize escaped characters (remove backslashes before dots)
     const ogImage = ogImageRaw.replace(/\\+\./g, '.');
 
@@ -53,17 +53,28 @@ export async function GET() {
     const altMatch = layoutContent.match(/alt:\s*['"]([^'"]+)['"]/);
     const ogImageAlt = altMatch ? altMatch[1] : 'Start Page Preview';
 
-    // Extract favicon - Next.js 13+ uses app/icon.png automatically
-    // Check if icon.png exists in app directory, otherwise fallback to metadata icons
-    const srcAppIconPath = path.join(process.cwd(), 'src/app', 'icon.png');
-    const appIconPath = path.join(process.cwd(), 'app', 'icon.png');
-    let favicon = '/icon.png'; // Default to icon.png (Next.js convention)
+    // Extract favicon - Next.js 13+ uses app/icon.* automatically (supports .png, .svg, .ico)
+    // Check if icon files exist in app directory, otherwise fallback to metadata icons
+    const srcAppIconPng = path.join(process.cwd(), 'src/app', 'icon.png');
+    const srcAppIconSvg = path.join(process.cwd(), 'src/app', 'icon.svg');
+    const appIconPng = path.join(process.cwd(), 'app', 'icon.png');
+    const appIconSvg = path.join(process.cwd(), 'app', 'icon.svg');
+    let favicon = '/favicon.svg'; // Default to favicon.svg (from public directory)
     
-    // If icon.png doesn't exist, try to extract from metadata (for backwards compatibility)
-    if (!fs.existsSync(srcAppIconPath) && !fs.existsSync(appIconPath)) {
+    // Check for icon files in app directory (Next.js 13+ convention)
+    if (fs.existsSync(srcAppIconSvg)) {
+      favicon = '/icon.svg';
+    } else if (fs.existsSync(srcAppIconPng)) {
+      favicon = '/icon.png';
+    } else if (fs.existsSync(appIconSvg)) {
+      favicon = '/icon.svg';
+    } else if (fs.existsSync(appIconPng)) {
+      favicon = '/icon.png';
+    } else {
+      // If no icon files exist, try to extract from metadata (for backwards compatibility)
       const faviconStringMatch = layoutContent.match(/icon:\s*['"]([^'"]+)['"]/);
       const faviconArrayMatch = layoutContent.match(/icon:\s*\[\s*\{\s*url:\s*['"]([^'"]+)['"]/);
-      const faviconRaw = faviconStringMatch?.[1] ?? faviconArrayMatch?.[1] ?? '/icon.png';
+      const faviconRaw = faviconStringMatch?.[1] ?? faviconArrayMatch?.[1] ?? '/favicon.svg';
       favicon = faviconRaw.replace(/\\+\./g, '.');
     }
 

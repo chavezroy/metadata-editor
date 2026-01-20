@@ -55,10 +55,10 @@ export default function MetadataEditor(): React.ReactElement {
     title: 'Start Page',
     description: 'Personal Start Page with Local Persistence',
     siteUrl: 'https://yourdomain.com',
-    ogImage: '/og-image.png',
+    ogImage: '/og-img.png',
     ogImageWidth: 1200,
     ogImageHeight: 630,
-    favicon: '/icon.png',
+    favicon: '/favicon.svg',
   });
 
   // Define loadCurrentMetadata before useEffect that uses it
@@ -430,7 +430,6 @@ export default function MetadataEditor(): React.ReactElement {
                         </div>
                       </div>
                     </div>
-                  )}
                 </div>
 
                 {/* Favicon */}

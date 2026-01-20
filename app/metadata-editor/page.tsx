@@ -512,7 +512,7 @@ export default function MetadataEditor(): React.ReactElement {
                     Twitter / X
                   </h3>
                   <div className="p-4 rounded-lg border border-gray-300 bg-white max-w-[550px]">
-                    <div className="border border-gray-300 rounded-lg overflow-hidden">
+                    <div className="overflow-hidden">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[2/1]">
                           <img
@@ -537,7 +537,7 @@ export default function MetadataEditor(): React.ReactElement {
                     Facebook
                   </h3>
                   <div className="p-4 rounded-lg border border-gray-300 bg-white max-w-[550px]">
-                    <div className="border border-gray-300 rounded overflow-hidden">
+                    <div className="overflow-hidden">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -562,7 +562,7 @@ export default function MetadataEditor(): React.ReactElement {
                     LinkedIn
                   </h3>
                   <div className="p-4 rounded-lg border border-gray-300 bg-white max-w-[550px]">
-                    <div className="border border-gray-300 rounded overflow-hidden">
+                    <div className="overflow-hidden">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -586,7 +586,7 @@ export default function MetadataEditor(): React.ReactElement {
                     iMessage / Slack
                   </h3>
                   <div className="p-4 rounded-lg border border-gray-300 bg-white max-w-[400px]">
-                    <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+                    <div className="overflow-hidden">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -618,7 +618,7 @@ export default function MetadataEditor(): React.ReactElement {
                       <p className="text-sm font-semibold text-blue-600 hover:underline mb-1">{formData.title}</p>
                       <p className="text-xs text-gray-600 mb-3">{formData.description}</p>
                       {formData.ogImage && (
-                        <div className="rounded overflow-hidden max-w-[400px]">
+                        <div className="max-w-[400px]">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
@@ -714,7 +714,7 @@ export default function MetadataEditor(): React.ReactElement {
                               rel="noopener noreferrer"
                               className="block"
                             >
-                              <div className="w-full max-w-md min-w-[320px] rounded-lg overflow-hidden border border-gray-300 mt-2 bg-gray-100 flex items-center justify-center aspect-[1200/630]">
+                              <div className="w-full max-w-md min-w-[320px] mt-2 bg-gray-100 flex items-center justify-center aspect-[1200/630]">
                                 <img
                                   src={externalMetadata.image}
                                   alt="OG Image"
@@ -739,7 +739,7 @@ export default function MetadataEditor(): React.ReactElement {
                             </a>
                           </>
                         ) : (
-                          <div className="w-full max-w-md min-w-[320px] rounded-lg border border-gray-300 mt-2 flex items-center justify-center p-8 bg-gray-100 aspect-[1200/630]">
+                          <div className="w-full max-w-md min-w-[320px] mt-2 flex items-center justify-center bg-gray-100 aspect-[1200/630]">
                             <p className="text-center text-sm text-gray-600">
                               No OG image found
                             </p>

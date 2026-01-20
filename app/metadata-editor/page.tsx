@@ -511,8 +511,8 @@ export default function MetadataEditor(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-gray-900">
                     Twitter / X
                   </h3>
-                  <div className="max-w-[550px]">
-                    <div className="overflow-hidden">
+                  <div className="max-w-[550px] rounded-lg shadow-sm">
+                    <div className="overflow-hidden rounded-lg">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[2/1]">
                           <img
@@ -536,8 +536,8 @@ export default function MetadataEditor(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-gray-900">
                     Facebook
                   </h3>
-                  <div className="max-w-[550px]">
-                    <div className="overflow-hidden">
+                  <div className="max-w-[550px] rounded-lg shadow-sm">
+                    <div className="overflow-hidden rounded-lg">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -561,8 +561,8 @@ export default function MetadataEditor(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-gray-900">
                     LinkedIn
                   </h3>
-                  <div className="max-w-[550px]">
-                    <div className="overflow-hidden">
+                  <div className="max-w-[550px] rounded-lg shadow-sm">
+                    <div className="overflow-hidden rounded-lg">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -585,8 +585,8 @@ export default function MetadataEditor(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-gray-900">
                     iMessage / Slack
                   </h3>
-                  <div className="max-w-[400px]">
-                    <div className="overflow-hidden">
+                  <div className="max-w-[400px] rounded-lg shadow-sm">
+                    <div className="overflow-hidden rounded-lg">
                       {formData.ogImage && (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
@@ -610,7 +610,7 @@ export default function MetadataEditor(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-gray-900">
                     Discord
                   </h3>
-                  <div className="max-w-[450px]">
+                  <div className="max-w-[450px] rounded-lg shadow-sm">
                     <div className="border-l-4 border-indigo-500 pl-3">
                       <p className="text-xs font-semibold mb-2 text-indigo-500">
                         {getCurrentSiteUrl()}
@@ -618,11 +618,11 @@ export default function MetadataEditor(): React.ReactElement {
                       <p className="text-sm font-semibold text-blue-600 hover:underline mb-1">{formData.title}</p>
                       <p className="text-xs text-gray-600 mb-3">{formData.description}</p>
                       {formData.ogImage && (
-                        <div className="max-w-[400px]">
+                        <div className="max-w-[400px] rounded-lg">
                           <img
                             src={formData.ogImage}
                             alt="Preview"
-                            className="w-full"
+                            className="w-full rounded-lg"
                           />
                         </div>
                       )}

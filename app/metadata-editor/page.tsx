@@ -274,7 +274,7 @@ export default function MetadataEditor(): React.ReactElement {
                   : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
               }`}
             >
-              Current Site
+              Edit
             </button>
           )}
           <button

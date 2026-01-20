@@ -46,8 +46,21 @@ export async function POST(request: NextRequest) {
                      (host.includes('localhost') ? 'http' : 'https');
     const detectedSiteUrl = host ? `${protocol}://${host}` : data.siteUrl;
     
-    // Use environment variable if available, otherwise use detected URL
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || detectedSiteUrl;
+    // Build siteUrl with priority: env var > AWS Amplify > Vercel > detected > fallback
+    let siteUrl: string;
+    if (process.env.NEXT_PUBLIC_SITE_URL) {
+      siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    } else if (process.env.AWS_BRANCH && process.env.AWS_APP_ID) {
+      // AWS Amplify deployment
+      const branch = process.env.AWS_BRANCH;
+      const appId = process.env.AWS_APP_ID;
+      siteUrl = `https://${branch}.${appId}.amplifyapp.com`;
+    } else if (process.env.VERCEL_URL) {
+      // Vercel deployment
+      siteUrl = `https://${process.env.VERCEL_URL}`;
+    } else {
+      siteUrl = detectedSiteUrl || data.siteUrl;
+    }
 
     // Read existing layout file
     const existingContent = fs.readFileSync(layoutPath, 'utf-8');
@@ -91,10 +104,10 @@ function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { 
     'import "../styles/globals.css"'
   );
 
-  // Update or create siteUrl constant
+  // Update or create siteUrl constant with AWS Amplify and Vercel support
   const siteUrlRegex = /const\s+siteUrl\s*=[\s\S]*?;/;
   const escapedSiteUrl = data.siteUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  const newSiteUrl = `const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || \n  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : '${escapedSiteUrl}');`;
+  const newSiteUrl = `const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || \n  (process.env.AWS_BRANCH && process.env.AWS_APP_ID ? \`https://\${process.env.AWS_BRANCH}.\${process.env.AWS_APP_ID}.amplifyapp.com\` : \n  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : '${escapedSiteUrl}'));`;
   
   if (siteUrlRegex.test(updated)) {
     // Update existing siteUrl
@@ -132,11 +145,7 @@ function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { 
   const newMetadata = `export const metadata: Metadata = {
   title: '${escapedTitle}',
   description: '${escapedDescription}',
-  icons: {
-    icon: '${escapedFavicon}',
-    shortcut: '${escapedFavicon}',
-    apple: '${escapedFavicon}',
-  },
+  // Icons are handled automatically by Next.js via app/icon.png
   openGraph: {
     title: '${escapedTitle}',
     description: '${escapedDescription}',
@@ -171,12 +180,13 @@ function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { 
     updated = updated.replace(/title:\s*['"]([^'"]*)['"]/g, `title: '${escapedTitle}'`);
     updated = updated.replace(/description:\s*['"]([^'"]*)['"]/g, `description: '${escapedDescription}'`);
     
-    // Update icons
-    updated = updated.replace(/icon:\s*['"]([^'"]*)['"]/g, `icon: '${escapedFavicon}'`);
-    updated = updated.replace(/shortcut:\s*['"]([^'"]*)['"]/g, `shortcut: '${escapedFavicon}'`);
-    updated = updated.replace(/apple:\s*['"]([^'"]*)['"]/g, `apple: '${escapedFavicon}'`);
-    // Support icons.icon array format: icon: [{ url: "/..." , sizes: "any" }]
-    updated = updated.replace(/(icon:\s*\[\s*\{\s*url:\s*)['"][^'"]+['"]/g, `$1'${escapedFavicon}'`);
+    // Remove icons from metadata (Next.js 13+ uses app/icon.png automatically)
+    // Remove entire icons object if it exists
+    updated = updated.replace(/icons:\s*\{[\s\S]*?\},\s*/g, '');
+    // Remove individual icon properties
+    updated = updated.replace(/icon:\s*['"]([^'"]*)['"],?\s*/g, '');
+    updated = updated.replace(/shortcut:\s*['"]([^'"]*)['"],?\s*/g, '');
+    updated = updated.replace(/apple:\s*['"]([^'"]*)['"],?\s*/g, '');
     
     // Update OG image
     const ogImageRegex = /url:\s*`\$\{siteUrl\}([^`]+)`/g;

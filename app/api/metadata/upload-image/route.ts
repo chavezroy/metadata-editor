@@ -28,18 +28,38 @@ export async function POST(request: NextRequest) {
     // Determine file extension
     const ext = path.extname(file.name);
 
-    // Generate filename based on type
-    const filename = type === 'og' ? `og-image${ext}` : `favicon${ext}`;
+    let filePath: string;
+    let url: string;
 
-    // Ensure public directory exists
-    const publicDir = path.join(process.cwd(), 'public');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
+    if (type === 'og') {
+      // OG images go to public directory
+      const filename = `og-image${ext}`;
+      const publicDir = path.join(process.cwd(), 'public');
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, { recursive: true });
+      }
+      filePath = path.join(publicDir, filename);
+      url = `/${filename}`;
+    } else {
+      // Favicons go to app/icon.png (Next.js 13+ uses this automatically)
+      // Try src/app first, then fall back to app
+      const srcAppDir = path.join(process.cwd(), 'src/app');
+      const appDir = path.join(process.cwd(), 'app');
+      const targetAppDir = fs.existsSync(srcAppDir) ? srcAppDir : appDir;
+      
+      // Remove old favicon.ico if it exists
+      const oldFaviconPath = path.join(targetAppDir, 'favicon.ico');
+      if (fs.existsSync(oldFaviconPath)) {
+        fs.unlinkSync(oldFaviconPath);
+      }
+
+      // Save as icon.png (Next.js 13+ convention)
+      filePath = path.join(targetAppDir, 'icon.png');
+      url = '/icon.png'; // Next.js serves app/icon.png at /icon.png
     }
 
-    // Save to public directory
-    const publicPath = path.join(publicDir, filename);
-    fs.writeFileSync(publicPath, buffer);
+    // Save the file
+    fs.writeFileSync(filePath, buffer);
 
     // Get file metadata
     const size = buffer.length;
@@ -57,9 +77,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return the public URL and metadata
-    const url = `/${filename}`;
-
+    // Return the URL and metadata
     return NextResponse.json({
       success: true,
       url,

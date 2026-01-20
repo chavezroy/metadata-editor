@@ -53,11 +53,19 @@ export async function GET() {
     const altMatch = layoutContent.match(/alt:\s*['"]([^'"]+)['"]/);
     const ogImageAlt = altMatch ? altMatch[1] : 'Start Page Preview';
 
-    // Extract favicon (from icons.icon) - support string and array formats
-    const faviconStringMatch = layoutContent.match(/icon:\s*['"]([^'"]+)['"]/);
-    const faviconArrayMatch = layoutContent.match(/icon:\s*\[\s*\{\s*url:\s*['"]([^'"]+)['"]/);
-    const faviconRaw = faviconStringMatch?.[1] ?? faviconArrayMatch?.[1] ?? '/favicon.png';
-    const favicon = faviconRaw.replace(/\\+\./g, '.');
+    // Extract favicon - Next.js 13+ uses app/icon.png automatically
+    // Check if icon.png exists in app directory, otherwise fallback to metadata icons
+    const srcAppIconPath = path.join(process.cwd(), 'src/app', 'icon.png');
+    const appIconPath = path.join(process.cwd(), 'app', 'icon.png');
+    let favicon = '/icon.png'; // Default to icon.png (Next.js convention)
+    
+    // If icon.png doesn't exist, try to extract from metadata (for backwards compatibility)
+    if (!fs.existsSync(srcAppIconPath) && !fs.existsSync(appIconPath)) {
+      const faviconStringMatch = layoutContent.match(/icon:\s*['"]([^'"]+)['"]/);
+      const faviconArrayMatch = layoutContent.match(/icon:\s*\[\s*\{\s*url:\s*['"]([^'"]+)['"]/);
+      const faviconRaw = faviconStringMatch?.[1] ?? faviconArrayMatch?.[1] ?? '/icon.png';
+      favicon = faviconRaw.replace(/\\+\./g, '.');
+    }
 
     const metadata = {
       title,

@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  // Only allow in development mode
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json(
-      { error: 'This API is only available in development mode' },
-      { status: 403 }
-    );
-  }
-
+  // Allow in production - this is a read-only operation that fetches external metadata
   try {
     const searchParams = request.nextUrl.searchParams;
     const url = searchParams.get('url');

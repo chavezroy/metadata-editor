@@ -29,7 +29,10 @@ interface ExternalMetadata {
 
 export default function MetadataEditor(): React.ReactElement {
   // All hooks must be called unconditionally at the top level
-  const [activeTab, setActiveTab] = useState<'current' | 'external' | 'preview'>('current');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const [activeTab, setActiveTab] = useState<'current' | 'external' | 'preview'>(
+    isProduction ? 'preview' : 'current'
+  );
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [externalUrl, setExternalUrl] = useState('');
@@ -155,21 +158,8 @@ export default function MetadataEditor(): React.ReactElement {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saving, handleSave]);
 
-  // Only allow access in development mode - check AFTER all hooks are declared
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      <div className={styles.devModeNotice}>
-        <h1>Development Tool Only</h1>
-        <p>
-          The metadata editor is only available in development mode.
-          This tool modifies your source code files and is not meant to run in production.
-        </p>
-        <p>
-          To use this tool, run your Next.js development server locally with <code>npm run dev</code>.
-        </p>
-      </div>
-    );
-  }
+  // In production, only allow Preview and External URL tabs (read-only)
+  // Current Site tab (which modifies files) is restricted to development
 
   // Get current site URL - uses state to avoid hydration mismatch
   const getCurrentSiteUrl = (): string => {
@@ -275,16 +265,18 @@ export default function MetadataEditor(): React.ReactElement {
 
         {/* Tabs */}
         <div className="flex flex-col md:flex-row gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('current')}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              activeTab === 'current' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-            }`}
-          >
-            Current Site
-          </button>
+          {!isProduction && (
+            <button
+              onClick={() => setActiveTab('current')}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                activeTab === 'current' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+              }`}
+            >
+              Current Site
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('preview')}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
@@ -309,7 +301,7 @@ export default function MetadataEditor(): React.ReactElement {
 
         {/* Content Container */}
         <div className="p-6 md:p-8 bg-gray-50 rounded-lg border border-gray-300">
-          {activeTab === 'current' ? (
+          {activeTab === 'current' && !isProduction ? (
             <>
               {/* Current Site Metadata Form */}
               <div className="space-y-6">

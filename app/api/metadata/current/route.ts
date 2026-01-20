@@ -3,14 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET() {
-  // Only allow in development mode
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json(
-      { error: 'This API is only available in development mode' },
-      { status: 403 }
-    );
-  }
-
+  // Allow in production - this is a read-only operation that reads layout.tsx
   try {
     // Try src/app first, then fall back to app
     const srcLayoutPath = path.join(process.cwd(), 'src/app', 'layout.tsx');

@@ -49,14 +49,17 @@ mv "$TEMP_DIR/page.tsx" "$APP_DIR/metadata-editor/"
 curl -fsSL "$REPO_URL/app/api/metadata/current/route.ts" -o "$TEMP_DIR/current-route.ts"
 curl -fsSL "$REPO_URL/app/api/metadata/update/route.ts" -o "$TEMP_DIR/update-route.ts"
 curl -fsSL "$REPO_URL/app/api/metadata/upload-image/route.ts" -o "$TEMP_DIR/upload-route.ts"
+curl -fsSL "$REPO_URL/app/api/meta/route.ts" -o "$TEMP_DIR/meta-route.ts"
 
 mkdir -p "$APP_DIR/api/metadata/current"
 mkdir -p "$APP_DIR/api/metadata/update"
 mkdir -p "$APP_DIR/api/metadata/upload-image"
+mkdir -p "$APP_DIR/api/meta"
 
 mv "$TEMP_DIR/current-route.ts" "$APP_DIR/api/metadata/current/route.ts"
 mv "$TEMP_DIR/update-route.ts" "$APP_DIR/api/metadata/update/route.ts"
 mv "$TEMP_DIR/upload-route.ts" "$APP_DIR/api/metadata/upload-image/route.ts"
+mv "$TEMP_DIR/meta-route.ts" "$APP_DIR/api/meta/route.ts"
 
 # Download components
 curl -fsSL "$REPO_URL/components/ui/NotificationModal.tsx" -o "$TEMP_DIR/NotificationModal.tsx"

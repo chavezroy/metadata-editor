@@ -40,10 +40,12 @@ mkdir -p "$STORE_DIR"
 # Download files
 echo "⬇️  Downloading files from GitHub..."
 
-# Download metadata-editor page
+# Download metadata-editor page and CSS
 curl -fsSL "$REPO_URL/app/metadata-editor/page.tsx" -o "$TEMP_DIR/page.tsx"
+curl -fsSL "$REPO_URL/app/metadata-editor/metadata-editor.module.css" -o "$TEMP_DIR/metadata-editor.module.css"
 mkdir -p "$APP_DIR/metadata-editor"
 mv "$TEMP_DIR/page.tsx" "$APP_DIR/metadata-editor/"
+mv "$TEMP_DIR/metadata-editor.module.css" "$APP_DIR/metadata-editor/"
 
 # Download API routes
 curl -fsSL "$REPO_URL/app/api/metadata/current/route.ts" -o "$TEMP_DIR/current-route.ts"

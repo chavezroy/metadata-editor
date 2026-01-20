@@ -91,12 +91,29 @@ function updateLayoutMetadata(existingContent: string, data: MetadataUpdate & { 
     'import "../styles/globals.css"'
   );
 
-  // Update siteUrl constant if it exists
+  // Update or create siteUrl constant
   const siteUrlRegex = /const\s+siteUrl\s*=[\s\S]*?;/;
-  const newSiteUrl = `const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || \n  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : '${data.siteUrl}');`;
+  const escapedSiteUrl = data.siteUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const newSiteUrl = `const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || \n  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : '${escapedSiteUrl}');`;
   
   if (siteUrlRegex.test(updated)) {
+    // Update existing siteUrl
     updated = updated.replace(siteUrlRegex, newSiteUrl);
+  } else {
+    // Create siteUrl constant before metadata export if it doesn't exist
+    const metadataExportRegex = /(export\s+const\s+metadata)/;
+    if (metadataExportRegex.test(updated)) {
+      updated = updated.replace(metadataExportRegex, `${newSiteUrl}\n\n$1`);
+    } else {
+      // If no metadata export found, add at the top after imports
+      const importEndRegex = /(import\s+[^;]+;[\s\n]*)+/;
+      if (importEndRegex.test(updated)) {
+        updated = updated.replace(importEndRegex, `$&${newSiteUrl}\n\n`);
+      } else {
+        // Last resort: add at the beginning
+        updated = `${newSiteUrl}\n\n${updated}`;
+      }
+    }
   }
 
   // Update metadata object - handle both single-line and multi-line formats

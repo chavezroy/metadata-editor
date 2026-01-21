@@ -58,7 +58,7 @@ export default function MetadataEditor(): React.ReactElement {
     ogImage: '/og-img.png',
     ogImageWidth: 1200,
     ogImageHeight: 630,
-    favicon: '/favicon.svg',
+    favicon: '/favicon.png',
   });
 
   // Define loadCurrentMetadata before useEffect that uses it
@@ -179,10 +179,14 @@ export default function MetadataEditor(): React.ReactElement {
 
       if (response.ok) {
         const { url, size, uploadDate, width, height } = await response.json();
+        // Add cache buster to force image reload
+        const timestamp = Date.now();
+        const urlWithCacheBuster = `${url}?t=${timestamp}`;
+        
         if (type === 'og') {
           setFormData((prevData) => ({
             ...prevData,
-            ogImage: url,
+            ogImage: urlWithCacheBuster,
             ogImageSize: size,
             ogImageUploadDate: uploadDate,
             ogImageWidth: width || prevData.ogImageWidth,
@@ -191,7 +195,7 @@ export default function MetadataEditor(): React.ReactElement {
         } else {
           setFormData((prevData) => ({
             ...prevData,
-            favicon: url,
+            favicon: urlWithCacheBuster,
             faviconSize: size,
             faviconUploadDate: uploadDate,
           }));
@@ -381,6 +385,7 @@ export default function MetadataEditor(): React.ReactElement {
                     {formData.ogImage ? (
                       <div className="w-full max-w-[380px] bg-gray-100 flex items-center justify-center aspect-[1200/630]">
                         <img
+                          key={formData.ogImage}
                           src={formData.ogImage}
                           alt="OG Image Preview"
                           className="w-full h-full object-cover"
@@ -467,6 +472,7 @@ export default function MetadataEditor(): React.ReactElement {
                     {formData.favicon ? (
                       <div className={styles.faviconPreview}>
                         <img
+                          key={formData.favicon}
                           src={formData.favicon}
                           alt="Favicon Preview"
                         />
@@ -526,6 +532,7 @@ export default function MetadataEditor(): React.ReactElement {
                       {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[2/1]">
                           <img
+                            key={formData.ogImage}
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
@@ -555,6 +562,7 @@ export default function MetadataEditor(): React.ReactElement {
                       {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
+                            key={formData.ogImage}
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
@@ -584,6 +592,7 @@ export default function MetadataEditor(): React.ReactElement {
                       {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
+                            key={formData.ogImage}
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
@@ -612,6 +621,7 @@ export default function MetadataEditor(): React.ReactElement {
                       {formData.ogImage ? (
                         <div className="w-full bg-gray-100 aspect-[1.91/1]">
                           <img
+                            key={formData.ogImage}
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full h-full object-cover"
@@ -646,6 +656,7 @@ export default function MetadataEditor(): React.ReactElement {
                       {formData.ogImage ? (
                         <div className="max-w-[400px] rounded-lg">
                           <img
+                            key={formData.ogImage}
                             src={formData.ogImage}
                             alt="Preview"
                             className="w-full rounded-lg"

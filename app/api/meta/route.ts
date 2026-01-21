@@ -13,25 +13,48 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Normalize URL - add protocol if missing
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      // Try https first, fallback to http if needed
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
     // Validate URL
     let targetUrl: URL;
     try {
-      targetUrl = new URL(url);
+      targetUrl = new URL(normalizedUrl);
     } catch {
       return NextResponse.json(
-        { error: 'Invalid URL format' },
+        { error: 'Invalid URL format. Please include http:// or https://' },
         { status: 400 }
       );
     }
 
-    // Fetch the HTML from the external URL
-    const response = await fetch(targetUrl.toString(), {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FinterestMetadataBot/1.0)',
-      },
-      // Add timeout
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
+    // Fetch the HTML from the external URL with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    let response: Response;
+    try {
+      response = await fetch(targetUrl.toString(), {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; FinterestMetadataBot/1.0)',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        return NextResponse.json(
+          { error: 'Request timeout - URL took too long to respond' },
+          { status: 408 }
+        );
+      }
+      throw fetchError;
+    }
 
     if (!response.ok) {
       return NextResponse.json(
@@ -125,10 +148,25 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching external metadata:', error);
     
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return NextResponse.json(
+          { error: 'Request timeout - URL took too long to respond' },
+          { status: 408 }
+        );
+      }
+      
+      // Provide more specific error messages
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        return NextResponse.json(
+          { error: 'Failed to connect to the URL. Please check if the URL is correct and accessible.' },
+          { status: 503 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: 'Request timeout - URL took too long to respond' },
-        { status: 408 }
+        { error: error.message || 'Failed to fetch external metadata' },
+        { status: 500 }
       );
     }
 

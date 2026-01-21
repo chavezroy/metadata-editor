@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
   (process.env.AWS_BRANCH && process.env.AWS_APP_ID ? `https://${process.env.AWS_BRANCH}.${process.env.AWS_APP_ID}.amplifyapp.com` : 
@@ -16,10 +17,15 @@ export const metadata: Metadata = {
     siteName: 'Metadata Editor Test',
     images: [
       {
-        url: `${siteUrl}/og-img.png`,
+        url: `${siteUrl}/og-image.jpg?t=1768973539630`,
         width: 1200,
         height: 630,
         alt: 'Metadata Editor Test',
+      },
+    ],    videos: [
+      {
+        url: `${siteUrl}/og-vid.mp4`,
+        type: 'video/mp4',
       },
     ],
     locale: 'en_US',
@@ -29,7 +35,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Metadata Editor Test',
     description: 'Test page for metadata editor',
-    images: [`${siteUrl}/og-img.png`],
+    images: [`${siteUrl}/og-image.jpg?t=1768973539630`],
   },
 };
 
@@ -39,8 +45,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

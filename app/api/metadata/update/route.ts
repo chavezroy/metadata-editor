@@ -9,6 +9,7 @@ interface MetadataUpdate {
   ogImage: string;
   ogImageWidth: number;
   ogImageHeight: number;
+  ogVideo?: string;
   favicon: string;
 }
 
@@ -160,12 +161,22 @@ function updateLayoutMetadata(
   
   const normalizedOgImage = normalizePublicPath(data.ogImage);
   const normalizedFavicon = normalizePublicPath(data.favicon);
+  const normalizedOgVideo = data.ogVideo ? normalizePublicPath(data.ogVideo) : undefined;
 
   // Escape for embedding into TS source (NOT regex escaping)
   const escapedTitle = escapeForSingleQuotedString(data.title);
   const escapedDescription = escapeForSingleQuotedString(data.description);
   const escapedOgImage = escapeForTemplateLiteral(normalizedOgImage);
   const escapedFavicon = escapeForSingleQuotedString(normalizedFavicon);
+  const escapedOgVideo = normalizedOgVideo ? escapeForTemplateLiteral(normalizedOgVideo) : undefined;
+
+  // Build videos array if ogVideo exists
+  const videosSection = escapedOgVideo ? `    videos: [
+      {
+        url: \`\${siteUrl}${escapedOgVideo}\`,
+        type: 'video/mp4',
+      },
+    ],` : '';
 
   const newMetadata = `export const metadata: Metadata = {
   title: '${escapedTitle}',
@@ -183,7 +194,7 @@ function updateLayoutMetadata(
         height: ${data.ogImageHeight},
         alt: '${escapedTitle}',
       },
-    ],
+    ],${videosSection}
     locale: 'en_US',
     type: 'website',
   },

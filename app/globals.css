@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Metadata Editor Colors - Light Mode */
+    --color-background: #ffffff;
+    --color-surface: #f9fafb;
+    --color-font: #111827;
+    --color-secondary: #6b7280;
+    --color-highlight: #3b82f6;
+  }
+
+  .dark {
+    /* Metadata Editor Colors - Dark Mode */
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-font: #f9fafb;
+    --color-secondary: #9ca3af;
+    --color-highlight: #60a5fa;
+  }
+}

@@ -67,6 +67,12 @@ export async function GET() {
     const altMatch = layoutContent.match(/alt:\s*['"]([^'"]+)['"]/);
     const ogImageAlt = altMatch ? altMatch[1] : 'Start Page Preview';
 
+    // Extract OG video URL (from openGraph.videos array or openGraph.video)
+    const ogVideoArrayMatch = layoutContent.match(/videos:\s*\[\s*\{\s*url:\s*`\$\{siteUrl\}([^`]+)`/);
+    const ogVideoStringMatch = layoutContent.match(/video:\s*`\$\{siteUrl\}([^`]+)`/);
+    let ogVideoRaw = ogVideoArrayMatch ? ogVideoArrayMatch[1] : (ogVideoStringMatch ? ogVideoStringMatch[1] : null);
+    const ogVideo = ogVideoRaw ? ogVideoRaw.replace(/\\+\./g, '.') : undefined;
+
     // Extract favicon - Next.js 13+ uses app/icon.* automatically (supports .png, .svg, .ico)
     // Check if icon files exist in app directory, otherwise check public directory, then fallback to metadata icons
     const srcAppIconPng = path.join(process.cwd(), 'src/app', 'icon.png');
@@ -106,6 +112,7 @@ export async function GET() {
       ogImageWidth,
       ogImageHeight,
       ogImageAlt,
+      ogVideo,
       favicon,
     };
 

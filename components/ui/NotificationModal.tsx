@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { CheckCircle, XCircle, X } from 'lucide-react';
-import { useStore } from '@/store/useStore';
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -19,7 +18,6 @@ export function NotificationModal({
   message,
   onClose,
 }: NotificationModalProps): React.ReactElement | null {
-  const { ui } = useStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -50,7 +48,7 @@ export function NotificationModal({
         className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-50 p-6 shadow-2xl md:left-1/2 md:right-auto md:-translate-x-1/2 md:min-w-[400px] md:max-w-md"
         style={{
           backgroundColor: 'var(--color-surface)',
-          borderRadius: `${ui.borderRadius}px`,
+          borderRadius: '8px',
           border: '1px solid var(--color-secondary)',
           animation: 'slideIn 0.3s ease-out',
         }}

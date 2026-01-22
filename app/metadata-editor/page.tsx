@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Upload, Globe, Save, RefreshCw, Image as ImageIcon, Video } from 'lucide-react';
-import { NotificationModal } from '@/components/ui/NotificationModal';
-import { ThemeSelector } from '@/components/ThemeSelector';
+import { NotificationModal } from '../components/ui/NotificationModal';
+import { ThemeSelector } from '../components/ThemeSelector';
+import { FacebookIcon, LinkedInIcon, AppleIcon, SlackIcon, DiscordIcon } from '../components/SocialIcons';
 import styles from './metadata-editor.module.css';
 
 interface MetadataForm {
@@ -55,6 +56,7 @@ export default function MetadataEditor(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<'current' | 'external' | 'preview'>(getInitialTab);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<{ type: 'og' | 'favicon' | null; progress: number }>({ type: null, progress: 0 });
   const [externalUrl, setExternalUrl] = useState('');
   const [externalMetadata, setExternalMetadata] = useState<ExternalMetadata | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -158,7 +160,7 @@ export default function MetadataEditor(): React.ReactElement {
   const loadCurrentMetadata = async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch('/api/metadata/current');
+      const response = await fetch('/api/metadata-editor/current');
       if (response.ok) {
         const data = await response.json();
         // Normalize image paths (remove any accidental escaping)
@@ -181,7 +183,7 @@ export default function MetadataEditor(): React.ReactElement {
   const handleSave = useCallback(async (): Promise<void> => {
     setSaving(true);
     try {
-      const response = await fetch('/api/metadata/update', {
+      const response = await fetch('/api/metadata-editor/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -268,15 +270,27 @@ export default function MetadataEditor(): React.ReactElement {
   };
 
   const handleImageUpload = async (file: File, type: 'og' | 'favicon'): Promise<void> => {
+    setUploading({ type, progress: 0 });
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
     formDataUpload.append('type', type);
 
     try {
-      const response = await fetch('/api/metadata/upload-image', {
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploading((prev) => ({
+          ...prev,
+          progress: Math.min(prev.progress + 10, 90),
+        }));
+      }, 100);
+
+      const response = await fetch('/api/metadata-editor/upload-image', {
         method: 'POST',
         body: formDataUpload,
       });
+
+      clearInterval(progressInterval);
+      setUploading({ type, progress: 100 });
 
       if (response.ok) {
         const { url, size, uploadDate, width, height } = await response.json();
@@ -301,9 +315,30 @@ export default function MetadataEditor(): React.ReactElement {
             faviconUploadDate: uploadDate,
           }));
         }
+
+        // Force image reload by updating key
+        setTimeout(() => {
+          setUploading({ type: null, progress: 0 });
+        }, 500);
+      } else {
+        setUploading({ type: null, progress: 0 });
+        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+        setNotification({
+          isOpen: true,
+          type: 'error',
+          title: 'Upload Failed',
+          message: errorData.error || 'Failed to upload image',
+        });
       }
     } catch (error) {
       console.error('Failed to upload image:', error);
+      setUploading({ type: null, progress: 0 });
+      setNotification({
+        isOpen: true,
+        type: 'error',
+        title: 'Upload Failed',
+        message: error instanceof Error ? error.message : 'Failed to upload image',
+      });
     }
   };
 
@@ -319,7 +354,7 @@ export default function MetadataEditor(): React.ReactElement {
       }
       
       const encodedUrl = encodeURIComponent(normalizedUrl);
-      const response = await fetch(`/api/meta?url=${encodedUrl}`);
+      const response = await fetch(`/api/metadata-editor/meta?url=${encodedUrl}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -539,33 +574,55 @@ export default function MetadataEditor(): React.ReactElement {
                         <div className="flex justify-center">
                           <div className="relative">
                             <label
-                              className="absolute -right-[1.125rem] -top-[1.125rem] inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-900/60 text-gray-900 dark:text-gray-100 opacity-70 backdrop-blur-sm transition-opacity hover:opacity-100 cursor-pointer origin-center z-10"
+                              className={`absolute -right-[1.125rem] -top-[1.125rem] inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-900/60 text-gray-900 dark:text-gray-100 opacity-70 backdrop-blur-sm transition-opacity hover:opacity-100 cursor-pointer origin-center z-10 ${
+                                uploading.type === 'favicon' ? 'opacity-100' : ''
+                              }`}
                               title="Upload favicon"
                             >
-                              <RefreshCw size={16} />
+                              {uploading.type === 'favicon' ? (
+                                <RefreshCw size={16} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={16} />
+                              )}
                               <input
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
+                                disabled={uploading.type === 'favicon'}
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) handleImageUpload(file, 'favicon');
+                                  e.target.value = ''; // Reset input
                                 }}
                               />
                             </label>
+                            {uploading.type === 'favicon' && (
+                              <div className="absolute -right-[1.125rem] -top-[1.125rem] w-9 h-9 rounded-lg border-2 border-blue-500 border-t-transparent animate-spin z-20 pointer-events-none"></div>
+                            )}
 
                             {formData.favicon ? (
                               <div className={`${styles.faviconPreview} p-1`}>
                                 <img
-                                  key={formData.favicon}
+                                  key={`${formData.favicon}-${formData.faviconUploadDate || Date.now()}`}
                                   src={formData.favicon}
                                   alt="Favicon Preview"
+                                  onLoad={() => {
+                                    // Force re-render on successful load
+                                    setFormData((prev) => ({ ...prev }));
+                                  }}
+                                  onError={(e) => {
+                                    // Fallback to Globe icon on error
+                                    const parent = e.currentTarget.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>';
+                                    }
+                                  }}
                                 />
                               </div>
                             ) : (
                               <div className={`${styles.faviconPreview} p-1`}>
                                 <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded">
-                                  <span className="text-gray-400 text-xs">Icon</span>
+                                  <Globe size={24} className="text-gray-400" />
                                 </div>
                               </div>
                             )}
@@ -614,16 +671,29 @@ export default function MetadataEditor(): React.ReactElement {
                         </h2>
                       </div>
                       <div>
-                        <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 w-full justify-center">
-                          <Upload size={16} />
-                          <span>Upload Image</span>
+                        <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 w-full justify-center ${
+                          uploading.type === 'og' ? 'opacity-75 cursor-wait' : ''
+                        }`}>
+                          {uploading.type === 'og' ? (
+                            <>
+                              <RefreshCw size={16} className="animate-spin" />
+                              <span>Uploading... {uploading.progress}%</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={16} />
+                              <span>Upload Image</span>
+                            </>
+                          )}
                           <input
                             type="file"
                             accept="image/*"
                             className="hidden"
+                            disabled={uploading.type === 'og'}
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) handleImageUpload(file, 'og');
+                              e.target.value = ''; // Reset input
                             }}
                           />
                         </label>
@@ -636,15 +706,19 @@ export default function MetadataEditor(): React.ReactElement {
                         {formData.ogImage ? (
                           <div className="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center aspect-[1200/630]">
                             <img
-                              key={formData.ogImage}
+                              key={`${formData.ogImage}-${formData.ogImageUploadDate || Date.now()}`}
                               src={formData.ogImage}
                               alt="OG Image Preview"
                               className="w-full h-full object-cover"
+                              onLoad={() => {
+                                // Force re-render on successful load
+                                setFormData((prev) => ({ ...prev }));
+                              }}
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 const parent = e.currentTarget.parentElement;
                                 if (parent) {
-                                  parent.innerHTML = '<div class="text-center p-4"><p class="text-gray-600">Failed to load image</p></div>';
+                                  parent.innerHTML = '<div class="text-center p-4"><p class="text-gray-600 dark:text-gray-400">Failed to load image</p></div>';
                                 }
                               }}
                             />
@@ -987,7 +1061,7 @@ export default function MetadataEditor(): React.ReactElement {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                      <img src="/facebook.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                      <FacebookIcon />
                       Facebook
                     </h3>
                     {formData.ogVideo && formData.ogImage && (
@@ -1060,7 +1134,7 @@ export default function MetadataEditor(): React.ReactElement {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                      <img src="/linkedin.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                      <LinkedInIcon />
                       LinkedIn
                     </h3>
                     {formData.ogVideo && formData.ogImage && (
@@ -1132,7 +1206,7 @@ export default function MetadataEditor(): React.ReactElement {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                      <img src="/apple.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                      <AppleIcon />
                       iMessage
                     </h3>
                     {formData.ogVideo && formData.ogImage && (
@@ -1204,7 +1278,7 @@ export default function MetadataEditor(): React.ReactElement {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                      <img src="/slack.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                      <SlackIcon />
                       Slack
                     </h3>
                     {formData.ogVideo && formData.ogImage && (
@@ -1282,7 +1356,7 @@ export default function MetadataEditor(): React.ReactElement {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                      <img src="/discord.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                      <DiscordIcon />
                       Discord
                     </h3>
                     {formData.ogVideo && formData.ogImage && (
@@ -1450,7 +1524,7 @@ export default function MetadataEditor(): React.ReactElement {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <img src="/facebook.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                          <FacebookIcon />
                           Facebook
                         </h3>
                       </div>
@@ -1489,7 +1563,7 @@ export default function MetadataEditor(): React.ReactElement {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <img src="/linkedin.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                          <LinkedInIcon />
                           LinkedIn
                         </h3>
                       </div>
@@ -1527,7 +1601,7 @@ export default function MetadataEditor(): React.ReactElement {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <img src="/apple.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                          <AppleIcon />
                           iMessage
                         </h3>
                       </div>
@@ -1565,7 +1639,7 @@ export default function MetadataEditor(): React.ReactElement {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <img src="/slack.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                          <SlackIcon />
                           Slack
                         </h3>
                       </div>
@@ -1609,7 +1683,7 @@ export default function MetadataEditor(): React.ReactElement {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <img src="/discord.svg" alt="" className="w-5 h-5" aria-hidden="true" />
+                          <DiscordIcon />
                           Discord
                         </h3>
                       </div>
